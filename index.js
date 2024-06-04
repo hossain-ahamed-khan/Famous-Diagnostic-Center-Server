@@ -27,10 +27,18 @@ async function run() {
         await client.connect();
 
         const testCollection = client.db("diagnostic_centerDB").collection("tests");
+        const userCollection = client.db("diagnostic_centerDB").collection("users");
 
 
         app.get("/tests", async (req, res) => {
             const result = await testCollection.find().toArray();
+            res.send(result);
+        })
+
+        // user related api 
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user);
             res.send(result);
         })
 
