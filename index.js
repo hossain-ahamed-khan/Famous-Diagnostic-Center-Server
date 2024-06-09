@@ -155,6 +155,25 @@ async function run() {
 
         })
 
+        // banner related api 
+        app.post("/banners", verifyToken, verifyAdmin, async (req, res) => {
+            const item = req.body;
+            const result = await bannerCollection.insertOne(item);
+            res.send(result);
+        })
+
+        app.get("/banners", async (req, res) => {
+            const result = await bannerCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.delete("/banners/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await bannerCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
