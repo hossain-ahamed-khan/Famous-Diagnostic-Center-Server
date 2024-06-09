@@ -29,6 +29,7 @@ async function run() {
 
         const testCollection = client.db("diagnostic_centerDB").collection("tests");
         const userCollection = client.db("diagnostic_centerDB").collection("users");
+        const bannerCollection = client.db("diagnostic_centerDB").collection("banner");
 
 
         // jwt related api 
@@ -122,6 +123,36 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const result = await testCollection.findOne(query);
             res.send(result);
+        })
+
+        app.post("/tests", verifyToken, verifyAdmin, async (req, res) => {
+            const item = req.body;
+            const result = await testCollection.insertOne(item);
+            res.send(result);
+        })
+
+        app.delete("/tests/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await testCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.put('/tests/:id', async (req, res) => {
+            const query = { _id: new ObjectId(req.params.id) };
+            const data = {
+                $set: {
+                    title: req.body.title,
+                    image: req.body.image,
+                    date: req.body.date,
+                    slots: req.body.slots,
+                    short_description: req.body.short_description,
+                    price: req.body.price,
+                }
+            }
+            const result = await testCollection.updateOne(query, data);
+            res.send(result);
+
         })
 
 
