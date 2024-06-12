@@ -88,6 +88,13 @@ async function run() {
 
         })
 
+        app.get("/loggedUser/:email", verifyToken, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        })
+
         app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
