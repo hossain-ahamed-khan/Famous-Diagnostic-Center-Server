@@ -4,6 +4,8 @@ const cors = require("cors");
 var jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 5000;
 
 // middleware 
@@ -30,6 +32,7 @@ async function run() {
         const testCollection = client.db("diagnostic_centerDB").collection("tests");
         const userCollection = client.db("diagnostic_centerDB").collection("users");
         const bannerCollection = client.db("diagnostic_centerDB").collection("banner");
+        const bookedTestCollection = client.db("diagnostic_centerDB").collection("bookedTests");
 
 
         // jwt related api 
@@ -179,6 +182,39 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await bannerCollection.deleteOne(query);
             res.send(result);
+        })
+
+        // payment Intent 
+        app.post('/create-payment-intent', async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        })
+
+        // after payment booked tests 
+        app.post('/booked-tests', async (req, res) => {
+            const bookedTest = req.body;
+            console.log(bookedTest);
+            const bookedTestResult = await bookedTestCollection.insertOne(bookedTest);
+
+            // update test collection 
+            const updateDoc = {
+                $inc: {
+                    slots_count: -1
+                },
+            };
+            const updatedTestResult = await testCollection.updateOne(updateDoc);
+
+            res.send({ bookedTestResult, updatedTestResult });
         })
 
 
