@@ -203,16 +203,10 @@ async function run() {
         // after payment booked tests 
         app.post('/booked-tests', async (req, res) => {
             const bookedTest = req.body;
-            console.log(bookedTest);
             const bookedTestResult = await bookedTestCollection.insertOne(bookedTest);
 
             // update test collection 
-            const updateDoc = {
-                $inc: {
-                    slots_count: -1
-                },
-            };
-            const updatedTestResult = await testCollection.updateOne(updateDoc);
+            const updatedTestResult = await testCollection.updateOne({ title: bookedTest.testName }, { $inc: { slots_count: -1 } });
 
             res.send({ bookedTestResult, updatedTestResult });
         })
