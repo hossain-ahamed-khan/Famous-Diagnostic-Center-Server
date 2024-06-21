@@ -137,6 +137,13 @@ async function run() {
             res.send(result);
         })
 
+        app.delete("/bookedTests/:id", verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await bookedTestCollection.deleteOne(query);
+            res.send(result);
+        })
+
         app.get("/tests/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
