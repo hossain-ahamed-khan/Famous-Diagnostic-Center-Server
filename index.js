@@ -151,6 +151,11 @@ async function run() {
             res.send(result);
         })
 
+        app.get("/reservations", verifyToken, verifyAdmin, async (req, res) => {
+            const result = await bookedTestCollection.find().toArray();
+            res.send(result);
+        })
+
         app.post("/tests", verifyToken, verifyAdmin, async (req, res) => {
             const item = req.body;
             const result = await testCollection.insertOne(item);
