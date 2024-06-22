@@ -9,7 +9,13 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "https://diagnostic-center-9996e.web.app",
+        "https://diagnostic-center-9996e.firebaseapp.com",
+    ]
+}));
 app.use(express.json());
 
 
@@ -27,7 +33,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const testCollection = client.db("diagnostic_centerDB").collection("tests");
         const userCollection = client.db("diagnostic_centerDB").collection("users");
@@ -126,6 +132,15 @@ async function run() {
         // test related api 
         app.get("/tests", async (req, res) => {
             const result = await testCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get("/testResults/:email", verifyToken, async (req, res) => {
+            const query = { email: req.params.email };
+            if (req.params.email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+            const result = await testResultCollection.find(query).toArray();
             res.send(result);
         })
 
@@ -241,8 +256,8 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
