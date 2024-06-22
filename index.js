@@ -33,6 +33,7 @@ async function run() {
         const userCollection = client.db("diagnostic_centerDB").collection("users");
         const bannerCollection = client.db("diagnostic_centerDB").collection("banner");
         const bookedTestCollection = client.db("diagnostic_centerDB").collection("bookedTests");
+        const testResultCollection = client.db("diagnostic_centerDB").collection("testResults");
 
 
         // jwt related api 
@@ -153,6 +154,12 @@ async function run() {
 
         app.get("/reservations", verifyToken, verifyAdmin, async (req, res) => {
             const result = await bookedTestCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post("/submit-result/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const item = req.body;
+            const result = await testResultCollection.insertOne(item);
             res.send(result);
         })
 
